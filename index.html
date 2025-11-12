@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AKELLA N V SYAM PRASAD (SCHOOL ASSISTANT HINDI)</title>
+  <style>
+    :root{
+      --bg:#f7fafc;
+      --card:#ffffff;
+      --accent:#1f6feb;
+      --ok:#2ea44f;
+      --bad:#d73a49;
+      --text:#0f1724;
+    }
+    html,body{height:100%;}
+    body{
+      margin:0;
+      font-family:"Segoe UI",Roboto,"Noto Sans",Arial,sans-serif;
+      background:linear-gradient(180deg,#e6eefc 0%,var(--bg) 100%);
+      color:var(--text);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      box-sizing:border-box;
+    }
+
+    .quiz{
+      width:100%;
+      max-width:950px;
+      background:var(--card);
+      border-radius:14px;
+      box-shadow:0 8px 30px rgba(15,23,36,0.12);
+      padding:20px;
+      position:relative;
+      overflow:visible;
+    }
+
+    .header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+
+    .title{font-weight:700;font-size:20px;}
+    .controls{display:flex;gap:10px;}
+
+    button{
+      border:0;
+      background:var(--accent);
+      color:white;
+      padding:8px 12px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:600;
+      box-shadow:0 3px 8px rgba(31,111,235,0.18);
+    }
+    button.secondary{
+      background:transparent;
+      color:var(--accent);
+      border:2px solid rgba(31,111,235,0.12);
+      box-shadow:none;
+      font-weight:700;
+    }
+
+    .board{
+      display:grid;
+      grid-template-columns:1fr 200px 1fr;
+      gap:10px;
+      align-items:center;
+      position:relative;
+      min-height:360px;
+    }
+
+    .col{padding:10px;}
+
+    .left-list,.right-list{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      align-items:flex-start;
+      justify-content:space-evenly;
+    }
+
+    .item{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:10px 14px;
+      border-radius:10px;
+      background:linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.01));
+      box-shadow:0 2px 6px rgba(12,15,20,0.03);
+      min-width:160px;
+      cursor:pointer;
+      user-select:none;
+    }
+
+    .item .dot{
+      width:18px;height:18px;border-radius:50%;
+      background:var(--accent);display:inline-block;
+      flex:0 0 18px;
+      box-shadow:0 3px 6px rgba(31,111,235,0.18);
+    }
+
+    .item.right{
+      justify-content:flex-end;
+      align-self:stretch;
+      text-align:right;
+    }
+
+    .hindi{
+      font-size:30px;
+      font-weight:700;
+      direction:ltr;
+      line-height:1;
+    }
+
+    #svgLines{
+      position:absolute;
+      left:0; right:0; top:70px; bottom:20px;
+      pointer-events:none;
+      overflow:visible;
+    }
+
+    .status{margin-top:12px;font-weight:700;}
+    .legend{font-size:13px;color:#334155;}
+    .score-badge{
+      display:inline-block;
+      min-width:42px;
+      text-align:center;
+      padding:6px 8px;
+      border-radius:12px;
+      background:rgba(0,0,0,0.04);
+      font-weight:700;
+    }
+
+    @media(max-width:720px){
+      .board{grid-template-columns:1fr 120px 1fr;}
+      .item{min-width:120px;padding:8px 10px;}
+      .hindi{font-size:26px;}
+      #svgLines{top:64px;bottom:14px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz" id="quiz">
+    <div class="header">
+      <div>
+        <div class="title">AKELLA N V SYAM PRASAD (SCHOOL ASSISTANT HINDI)</div>
+        <div class="legend"></div>
+      </div>
+      <div class="controls">
+        <button id="checkBtn">Check</button>
+        <button id="resetBtn" class="secondary">Reset</button>
+      </div>
+    </div>
+
+    <div class="board" id="board">
+      <div class="col left-col"><div class="left-list" id="leftList"></div></div>
+      <div class="col center-col" style="position:relative;">
+        <svg id="svgLines" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <div class="col right-col"><div class="right-list" id="rightList"></div></div>
+    </div>
+
+    <div class="status" id="status">
+      <span class="score-badge" id="scoreBadge">0 / 12</span>
+    </div>
+  </div>
+
+  <script>
+    const MASTER_PAIRS = [
+      { id:'a', left:'అ', right:'अ' }, { id:'aa', left:'ఆ', right:'आ' },
+      { id:'i', left:'ఇ', right:'इ' }, { id:'ii', left:'ఈ', right:'ई' },
+      { id:'u', left:'ఉ', right:'उ' }, { id:'uu', left:'ఊ', right:'ऊ' },
+      { id:'ru', left:'ఋ', right:'ऋ' }, { id:'e', left:'ఏ', right:'ए' },
+      { id:'ai', left:'ఐ', right:'ऐ' }, { id:'o', left:'ఓ', right:'ओ' },
+      { id:'au', left:'ఔ', right:'औ' }, { id:'am', left:'అం', right:'अं' },
+      { id:'vis', left:'అః', right:'अः' }, { id:'ka', left:'క', right:'क' },
+      { id:'kha', left:'ఖ', right:'ख' }, { id:'ga', left:'గ', right:'ग' },
+      { id:'gha', left:'ఘ', right:'घ' }, { id:'cha', left:'చ', right:'च' },
+      { id:'chha', left:'ఛ', right:'छ' }, { id:'ja', left:'జ', right:'ज' },
+      { id:'jha', left:'ఝ', right:'झ' }, { id:'tta', left:'ట', right:'ट' },
+      { id:'ttha', left:'ఠ', right:'ठ' }, { id:'dda', left:'డ', right:'ड' },
+      { id:'ddha', left:'ఢ', right:'ढ' }, { id:'na_ret', left:'ణ', right:'ण' },
+      { id:'ta', left:'త', right:'त' }, { id:'tha', left:'థ', right:'थ' },
+      { id:'da', left:'ద', right:'द' }, { id:'dha', left:'ధ', right:'ध' },
+      { id:'na', left:'న', right:'न' }, { id:'pa', left:'ప', right:'प' },
+      { id:'pha', left:'ఫ', right:'फ' }, { id:'ba', left:'బ', right:'ब' },
+      { id:'bha', left:'భ', right:'भ' }, { id:'ma', left:'మ', right:'म' },
+      { id:'ya', left:'య', right:'य' }, { id:'ra', left:'ర', right:'र' },
+      { id:'la', left:'ల', right:'ल' }, { id:'va', left:'వ', right:'व' },
+      { id:'sha', left:'శ', right:'श' }, { id:'ssa', left:'ష', right:'ष' },
+      { id:'sa', left:'స', right:'स' }, { id:'ha', left:'హ', right:'ह' },
+      { id:'ksha', left:'క్ష', right:'क्ष' }, { id:'tra', left:'త్ర', right:'त्र' },
+      { id:'jna', left:'జ్ఞ', right:'ज्ञ' }, { id:'shra', left:'శ్ర', right:'श्र' }
+    ];
+
+    function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+
+    const leftListEl=document.getElementById('leftList');
+    const rightListEl=document.getElementById('rightList');
+    const svg=document.getElementById('svgLines');
+    const statusEl=document.getElementById('status');
+    const scoreBadge=document.getElementById('scoreBadge');
+    let pairs=[],connections={},selectedLeft=null;
+
+    function render(){
+      pairs = MASTER_PAIRS.slice();
+      shuffle(pairs);
+      pairs = pairs.slice(0,12);
+
+      // Randomly decide: left side Telugu or Hindi
+      const leftIsTelugu = Math.random() < 0.5;
+
+      leftListEl.innerHTML='';
+      rightListEl.innerHTML='';
+      svg.innerHTML='';
+
+      let leftPool = pairs.map(it => ({
+        id: it.id,
+        text: leftIsTelugu ? it.left : it.right
+      }));
+      let rightPool = pairs.map(it => ({
+        id: it.id,
+        text: leftIsTelugu ? it.right : it.left
+      }));
+
+      shuffle(leftPool);
+      shuffle(rightPool);
+
+      leftPool.forEach(it=>{
+        const item=document.createElement('div');
+        item.className='item left';
+        item.dataset.pairId=it.id;
+        item.innerHTML=`<span class="dot"></span><span class="hindi">${it.text}</span>`;
+        item.addEventListener('click',onLeftClick);
+        leftListEl.appendChild(item);
+      });
+
+      rightPool.forEach(it=>{
+        const item=document.createElement('div');
+        item.className='item right';
+        item.dataset.pairId=it.id;
+        item.innerHTML=`<span class="hindi">${it.text}</span><span class="dot"></span>`;
+        item.addEventListener('click',onRightClick);
+        rightListEl.appendChild(item);
+      });
+
+      connections={}; updateScoreBadge();
+    }
+
+    function centerOf(el){
+      const svgRect=svg.getBoundingClientRect();
+      const r=el.getBoundingClientRect();
+      return{x:(r.left+r.right)/2-svgRect.left+svg.scrollLeft,
+             y:(r.top+r.bottom)/2-svgRect.top+svg.scrollTop};
+    }
+
+    function onLeftClick(e){
+      const el=e.currentTarget; const pid=el.dataset.pairId;
+      if(selectedLeft===pid){selectedLeft=null;el.style.boxShadow='';}
+      else{
+        document.querySelectorAll('.item.left').forEach(x=>x.style.boxShadow='');
+        selectedLeft=pid; el.style.boxShadow='0 0 0 4px rgba(31,111,235,0.12)';
+      }
+    }
+
+    function onRightClick(e){
+      const rightEl=e.currentTarget; const rightId=rightEl.dataset.pairId;
+      if(!selectedLeft){
+        rightEl.style.boxShadow='0 0 0 4px rgba(100,100,100,0.06)';
+        setTimeout(()=>rightEl.style.boxShadow='',220); return;
+      }
+      const existing=Object.keys(connections).find(l=>connections[l]===rightId);
+      if(existing){delete connections[existing];}
+      connections[selectedLeft]=rightId;
+      document.querySelectorAll('.item.left').forEach(x=>x.style.boxShadow='');
+      selectedLeft=null; drawAllLines(); updateScoreBadge();
+    }
+
+    function drawAllLines(){
+      svg.innerHTML='';
+      for(const leftId in connections){
+        const rightId=connections[leftId];
+        const leftEl=find(leftId,'left'), rightEl=find(rightId,'right');
+        if(!leftEl||!rightEl)continue;
+        const a=centerOf(leftEl), b=centerOf(rightEl);
+        const midx=(a.x+b.x)/2;
+        const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+        const d=`M ${a.x} ${a.y} C ${midx} ${a.y} ${midx} ${b.y} ${b.x} ${b.y}`;
+        path.setAttribute('d',d);
+        path.setAttribute('fill','none');
+        path.setAttribute('stroke','rgba(31,111,235,0.9)');
+        path.setAttribute('stroke-width','4');
+        path.setAttribute('stroke-linecap','round');
+        path.setAttribute('data-left',leftId);
+        svg.appendChild(path);
+      }
+    }
+
+    function find(pairId,side){
+      return Array.from((side==='left'?leftListEl:rightListEl).children)
+        .find(el=>el.dataset.pairId===pairId);
+    }
+
+    function checkAnswers(){
+      let correct=0;
+      svg.querySelectorAll('path').forEach(path=>{
+        const leftId=path.getAttribute('data-left');
+        const rightId=connections[leftId];
+        if(leftId===rightId){path.setAttribute('stroke','#006400');correct++;}
+        else{path.setAttribute('stroke','#ff0000');}
+      });
+      scoreBadge.textContent=`${correct} / ${pairs.length}`;
+    }
+
+    function updateScoreBadge(){
+      scoreBadge.textContent=`${Object.keys(connections).length} / ${pairs.length}`;
+      statusEl.querySelector('.legend').textContent='Click left then right to connect.';
+    }
+
+    function resetAll(){connections={};selectedLeft=null;render();drawAllLines();}
+
+    document.getElementById('checkBtn').addEventListener('click',checkAnswers);
+    document.getElementById('resetBtn').addEventListener('click',resetAll);
+    render();
+  </script>
+</body>
+</html>
