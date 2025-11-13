@@ -211,7 +211,7 @@
     function render(){
       pairs = MASTER_PAIRS.slice();
       shuffle(pairs);
-      pairs = pairs.slice(0,12);
+      pairs = pairs.slice(0,8);
 
       // Randomly decide: left side Telugu or Hindi
       const leftIsTelugu = Math.random() < 0.5;
@@ -330,4 +330,5 @@
     render();
   </script>
 </body>
+
 </html>
